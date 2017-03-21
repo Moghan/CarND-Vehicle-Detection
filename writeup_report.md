@@ -86,12 +86,12 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
 
-Here's a [link to my video result](https://youtu.be/0SgkZ7zZmd8)
+Here's a [link to my video result](https://youtu.be/lDkh3c7--eY)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I save the boxes with positive detections from the last 20 frames (Code lines 37 - 59). The solution(at the moment) are using boxes from the last 8 frames to create a heatmap. The heatmap is treshholded (Code line 528). Pixel values of 4 and less is considered false positive and is set to zero. The heatmap is then used with `scipy.ndimage.measurements.label()` to identify individual blobs. Every blob is assumed to be a vehicle.
+I save the boxes with positive detections from the last 20 frames (Code lines 37 - 59). The solution(at the moment) are using boxes from the last 8 frames to create a heatmap. The heatmap is treshholded (Code line 528). Pixel values of 6 and less is considered false positive and is set to zero. The heatmap is then used with `scipy.ndimage.measurements.label()` to identify individual blobs. Every blob is assumed to be a vehicle.
 
 When processing single images, no history of positive hits is available and thresholding heatmap is not effective.
 Here are examples showing boxes, corresponding heatmap, and labels found. (No threshhold on heatmap is applied):
