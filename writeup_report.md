@@ -19,6 +19,7 @@ The goals / steps of this project are the following:
 [125_area_box_heat]: ./examples/scale125_area_boxes_heatmap.jpg
 [box_heat_label]: ./examples/boxes_heatmap_labels.jpg
 [x6_box_heat_label]: ./examples/x6_boxes_heatmap_labels.jpg
+[sliding_windows]: ./examples/sliding_windows.jpg
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
@@ -45,9 +46,9 @@ Parameters to ´hog(...)´ was set to:
 
 Examples of HOG visualization on car and not car images:
 
-![HOG example 1][hog_ex1]
-![HOG example 2][hog_ex2]
-![HOG example 3][hog_ex3]
+![HOG example 1][hog1_ex]
+![HOG example 2][hog2_ex]
+![HOG example 3][hog3_ex]
 
 
 
@@ -71,6 +72,9 @@ Example of 2.0 scale search:
 Example of 1.25 scale search:
 ![search area for 1.25 scale][125_area_box_heat]
 
+To visualize the sliding window grid, this image shows one sliding window in every row of windows in each search area.
+![sliding window example][sliding_windows]
+
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
@@ -89,7 +93,9 @@ Here's a [link to my video result](./project_video.mp4)
 
 I save the boxes with positive detections from the last 20 frames. The solution(at the moment) are using boxes from the last 5 frames to create a heatmap. The heatmap is treshholded. Pixel values of 3 and less is considered false positive and is set to zero. The heatmap is then used with `scipy.ndimage.measurements.label()` to identify individual blobs. Every blob is assumed to be a vehicle.
 
-Here are examples showing boxes, corresponding heatmap before threshhold, and labels found (after threshhold on heatmap is applied):
+When processing single images, no history of positive hits is available and thresholding heatmap is not effective
+Here are examples showing boxes, corresponding heatmap, and labels found. (No threshhold on heatmap is applied):
+
 
 ![x6 box, heat and labels example][x6_box_heat_label]
 
