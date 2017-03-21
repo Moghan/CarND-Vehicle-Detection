@@ -520,12 +520,12 @@ def image_pipeline(img):
 	out_img, out_boxes = find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins)
 
 	box_memory.add_boxes(out_boxes)
-	out_boxes = box_memory.get_boxes_from_X_frames(frames = 5)
+	out_boxes = box_memory.get_boxes_from_X_frames(frames = 8)
 
 	for box in out_boxes:
 		heatmap = add_heat(heatmap, box)
 
-	heatmap = apply_threshold(heatmap, 4)
+	heatmap = apply_threshold(heatmap, 6)
 
 	labels = label(heatmap)
 
