@@ -11,18 +11,17 @@ The goals / steps of this project are the following:
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
+
+[hog1_ex]: ./examples/HOG_example1.jpg
+[hog2_ex]: ./examples/HOG_example2.jpg
+[hog3_ex]: ./examples/HOG_example3.jpg
+[20_area_box_heat]: ./examples/scale20_area_boxes_heatmap.jpg
+[125_area_box_heat]: ./examples/scale125_area_boxes_heatmap.jpg
+[box_heat_label]: ./examples/boxes_heatmap_labels.jpg
+[x6_box_heat_label]: ./examples/x6_boxes_heatmap_labels.jpg
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
 ---
 ### Writeup / README
 
@@ -30,12 +29,13 @@ The goals / steps of this project are the following:
 
 You're reading it!
 
-###Histogram of Oriented Gradients (HOG)
+### Histogram of Oriented Gradients (HOG)
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 In the ´single_img_features(...)´ function I convert to YCrCb colorspace and iterate all color channels, sending them one by one to ´get_hog_features(...)´. Features returned is appended in an array that, when completed, will contain spatial, histogram and HOG features for the image (Code lines *** TODO ***). The ´get_hog_features(...)´, extract feature data from ´skimage.feature.hog(...)´ and return them (Code lines *** TODO ***).
 
 Parameters to ´hog(...)´ was set to:
+
 |Parameter|Value|
 |---------|-----|
 |orientations|9|
@@ -59,7 +59,7 @@ With the well known trial and error technique, varouis combinations was tested, 
 
 I trained a linear SVM using spatial , histogram and HOG features (Code lines *** TODO ***). The trainingdata was shuffled, and 10 % of it was split to be testdata. 
 
-###Sliding Window Search
+### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
@@ -95,7 +95,7 @@ Here are examples showing boxes, corresponding heatmap before threshhold, and la
 
 ---
 
-###Discussion
+### Discussion
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
