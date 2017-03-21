@@ -20,7 +20,7 @@ The goals / steps of this project are the following:
 [box_heat_label]: ./examples/boxes_heatmap_labels.jpg
 [x6_box_heat_label]: ./examples/x6_boxes_heatmap_labels.jpg
 [sliding_windows]: ./examples/sliding_windows.jpg
-[video1]: ./project_video.mp4
+[video1]: https://youtu.be/0SgkZ7zZmd8
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ---
@@ -33,7 +33,7 @@ You're reading it!
 ### Histogram of Oriented Gradients (HOG)
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
-In the ´single_img_features(...)´ function I convert to YCrCb colorspace and iterate all color channels, sending them one by one to ´get_hog_features(...)´. Features returned is appended in an array that, when completed, will contain spatial, histogram and HOG features for the image (Code lines *** TODO ***). The ´get_hog_features(...)´, extract feature data from ´skimage.feature.hog(...)´ and return them (Code lines *** TODO ***).
+In the ´single_img_features(...)´ function I convert to YCrCb colorspace and iterate all color channels, sending them one by one to ´get_hog_features(...)´. Features returned is appended in an array that, when completed, will contain spatial, histogram and HOG features for the image (Code lines 178 - 230). The ´get_hog_features(...)´, extract feature data from ´skimage.feature.hog(...)´ and return them (Code lines 263 - 273).
 
 Parameters to ´hog(...)´ was set to:
 
@@ -44,7 +44,7 @@ Parameters to ´hog(...)´ was set to:
 |cells_per_block|2|
 |transform_sqrt|False|
 
-Examples of HOG visualization on car and not car images:
+Examples of HOG visualization on car and not car images  (YCrCb colorspace, Y' channel):
 
 ![HOG example 1][hog1_ex]
 ![HOG example 2][hog2_ex]
@@ -54,17 +54,17 @@ Examples of HOG visualization on car and not car images:
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-With the well known trial and error technique, varouis combinations was tested, before I settled for the YCrCb colorspace and the parameters seen above.
+With the well known trial and error technique, varouis combinations was tested, before I settled for using all color channels in the YCrCb colorspace and the parameters seen above.
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using spatial , histogram and HOG features (Code lines *** TODO ***). The trainingdata was shuffled, and 10 % of it was split to be testdata. 
+I trained a linear SVM using spatial , histogram and HOG features (Code lines 445 - 486). The trainingdata was shuffled, and 10 % of it was split to be testdata. 
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-With trial and error, again, I decided to search with two scales and an area for each scale. Scales used are 2.0 and 1.25. Overlap is 2 cells, which equals 75 % overlap. (Code lines *** TODO ***)
+With trial and error, again, I decided to search with two scales and an area for each scale. Scales used are 2.0 and 1.25. Overlap is 2 cells, which equals 75 % overlap. (Code lines 365 - 442)
 
 Example of 2.0 scale search:
 ![search area for 2.0 scale][20_area_box_heat]
@@ -86,14 +86,14 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](https://youtu.be/lDkh3c7--eY)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I save the boxes with positive detections from the last 20 frames. The solution(at the moment) are using boxes from the last 5 frames to create a heatmap. The heatmap is treshholded. Pixel values of 3 and less is considered false positive and is set to zero. The heatmap is then used with `scipy.ndimage.measurements.label()` to identify individual blobs. Every blob is assumed to be a vehicle.
+I save the boxes with positive detections from the last 20 frames (Code lines 37 - 59). The solution(at the moment) are using boxes from the last 8 frames to create a heatmap. The heatmap is treshholded (Code line 528). Pixel values of 6 and less is considered false positive and is set to zero. The heatmap is then used with `scipy.ndimage.measurements.label()` to identify individual blobs. Every blob is assumed to be a vehicle.
 
-When processing single images, no history of positive hits is available and thresholding heatmap is not effective
+When processing single images, no history of positive hits is available and thresholding heatmap is not effective.
 Here are examples showing boxes, corresponding heatmap, and labels found. (No threshhold on heatmap is applied):
 
 
@@ -107,8 +107,8 @@ Here are examples showing boxes, corresponding heatmap, and labels found. (No th
 
 I feel the solution is pretty robost in its simpleness.
 
-Identifying big or high vehicles in close range may not work at all. 
+Identifying big or high vehicles in close range may not work at all. Vehicles with uncommen exteria not representated in the dataset, may also be undetected.
 
-There are some interesting improvements I´d like to try. Combining with P4 and focus search areas where the road is known to be and track identified vehicles. Reducing the number of sliding windows by less overlap and focus on identified cars. Distance to other vehicles. Make the label-box be more stable, not changing in size so much between frames.
+There are some interesting improvements I´d like to try. Combining with P4 and focus search areas where the road is known to be, and track identified vehicles. Reducing the number of sliding windows by less overlap and focus on identified cars. Distance to other vehicles. Make the label-box be more stable, not changing in size so much between frames.
 
-I guess this writeup can be improved also, but prio is term 2 :)
+I guess this writeup can be improved, but prio is term 2 :)
