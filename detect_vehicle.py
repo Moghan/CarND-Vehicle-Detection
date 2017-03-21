@@ -20,7 +20,6 @@ from scipy.ndimage.measurements import label
 BASE_PATH_VEHICLES = 'vehicles/'
 BASE_PATH_NON_VEHICLES = 'non-vehicles/'
 
-
 sub_dirs = os.listdir(BASE_PATH_VEHICLES)
 cars = []
 for dir in sub_dirs:
@@ -274,24 +273,6 @@ def get_hog_features(img, orient, pix_per_cell, cell_per_block, vis=False, featu
         return features
 
 
-
-# def data_look(car_list, notcar_list):
-#     data_dict = {}
-#     # Define a key in data_dict "n_cars" and store the number of car images
-#     data_dict["n_cars"] = len(car_list)
-#     # Define a key "n_notcars" and store the number of notcar images
-#     data_dict["n_notcars"] = len(notcar_list)
-#     # Read in a test image, either car or notcar
-#     example_img = mpimg.imread(car_list[0])
-#     # Define a key "image_shape" and store the test image shape 3-tuple
-#     data_dict["image_shape"] = example_img.shape
-#     # Define a key "data_type" and store the data type of the test image.
-#     data_dict["data_type"] = example_img.dtype
-#     # Return data_dict
-#     return data_dict
-
-
-
 def add_heat(heatmap, bbox_list):
     # Iterate through list of bboxes
     for box in bbox_list:
@@ -336,7 +317,7 @@ def visualize(fig, rows, cols, imgs, titles):
 			plt.imshow(img)
 			plt.title(titles[i])
 
-	plt.savefig('output_images/boxes_heatmap_labels.jpg')
+	# plt.savefig('output_images/boxes_heatmap_labels.jpg')
 
   
 
@@ -381,7 +362,6 @@ def convert_color(img, conv='RGB2YCrCb'):
         return cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
 
 
-# def find_cars(img, ystarts, ystops, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins):
 def find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins):
     
     draw_img = np.copy(img)
@@ -395,12 +375,9 @@ def find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, ce
     for scale, box in zip(scales, search_boxes):
         xstart, ystart = box[0]
         xstop, ystop = box[1]
-    	# img_tosearch = img[ystart:ystop,:,:]
+
         img_tosearch = img[ ystart:ystop , xstart:xstop ,:]
         ctrans_tosearch = convert_color(img_tosearch, conv='RGB2YCrCb')
-        # for scale in scales:
-
-        print('scale', scale)
 
         if scale != 1:
             imshape = ctrans_tosearch.shape
@@ -429,9 +406,6 @@ def find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, ce
         hog2 = get_hog_features(ch2, orient, pix_per_cell, cell_per_block, feature_vec=False)
         hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block, feature_vec=False)
 
-        # print('2 times ???')
-        xb, yb = 0, 0
-        print(nxsteps)
         for xb in range(nxsteps):
             for yb in range(nysteps):
                 ypos = yb*cells_per_step
@@ -457,22 +431,15 @@ def find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, ce
                 #test_features = X_scaler.transform(np.hstack((shape_feat, hist_feat)).reshape(1, -1))
                 test_prediction = svc.predict(test_features)
 
-                # if test_prediction == 1:
-                if True:
+                if test_prediction == 1:
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)
                     win_draw = np.int(window*scale)
-                    if(xb == yb):
-                        cv2.rectangle(draw_img,(xbox_left+xstart, ytop_draw+ystart),(xbox_left+xstart+win_draw,ytop_draw+win_draw+ystart),(0,0,255),6)                    
+                    cv2.rectangle(draw_img,(xbox_left+xstart, ytop_draw+ystart),(xbox_left+xstart+win_draw,ytop_draw+win_draw+ystart),(0,0,255),6)                    
                     img_boxes.append(((xbox_left+xstart, ytop_draw+ystart),(xbox_left+xstart+win_draw,ytop_draw+win_draw+ystart)))
 
 
-
-
     return draw_img, img_boxes
-
-
-
 
 
 def setup_SVC(color_space, spatial_size, hist_bins, orient, pix_per_cell,
@@ -519,15 +486,54 @@ def setup_SVC(color_space, spatial_size, hist_bins, orient, pix_per_cell,
     return svc, X_scaler
 
 
+def process_image_array(imgArr):
+    out_titles = []
+    out_images = []
+
+    for imgPath in imgArr:
+        img = mpimg.imread(imgPath)
+        heatmap = np.zeros_like(img[:,:,0])
+
+        img_with_boxes, out_boxes = find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins)
+        heatmap = add_heat(heatmap, out_boxes)
+
+        labels = label(heatmap)
+        img_with_labels = draw_labeled_bboxes(np.copy(img), labels)
+
+        out_images.append(img_with_boxes)
+        out_titles.append('sliding windows example')
+        out_images.append(heatmap)
+        out_titles.append('heatmap')
+        out_images.append(img_with_labels)
+        out_titles.append('labels')
+
+    fig = plt.figure(figsize=(12,32)) # 6 x 2 -> 12, 32
+    visualize(fig, 6, 3, out_images, out_titles)
 
 
-# =============================
 
-# car_ind = np.random.randint(0, len(cars))
-# notcar_ind = np.random.randint(0, len(non_cars))
 
-# car_image = mpimg.imread(cars[car_ind])
-# notcar_image = mpimg.imread(non_cars[notcar_ind])
+
+def image_pipeline(img):
+	heatmap = np.zeros_like(img[:,:,0])
+	    
+	out_img, out_boxes = find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins)
+
+	box_memory.add_boxes(out_boxes)
+	out_boxes = box_memory.get_boxes_from_X_frames(frames = 5)
+
+	for box in out_boxes:
+		heatmap = add_heat(heatmap, box)
+
+	heatmap = apply_threshold(heatmap, 4)
+
+	labels = label(heatmap)
+
+	draw_img = draw_labeled_bboxes(np.copy(img), labels)
+
+	return draw_img
+
+
 
 color_space = 'YCrCb' # RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 9 # usually between ? to ?
@@ -546,116 +552,23 @@ svc, X_scaler = setup_SVC(color_space=color_space, spatial_size=spatial_size,
         spatial_feat=spatial_feat, hist_feat=hist_feat, hog_feat=hog_feat)
 
 
-out_images = []
-out_maps = []
-out_boxes = []
 
 
+box_memory = BoxMemory()
     
-ystarts = [400, 400, 400]
-ystops= [492, 544, 656]
-
-
 scales = [2.0, 1.25]
 
 search_boxes = [[(200,350),(1280,720)],
                 [(500,380),(1080,520)]]
 
 
-def process_image_array(imgArr):
-    out_titles = []
-    # draw_boxes(search_boxes)
-    img_with_boxes = []
-    img_with_labels = []
 
-    for imgPath in imgArr:
-        img = mpimg.imread(imgPath)
-        heatmap = np.zeros_like(img[:,:,0])
+challenge_output = 'output_images/vehicle_detection_video.mp4'
+clip2 = VideoFileClip('project_video.mp4')
+challenge_clip = clip2.fl_image(image_pipeline)
+challenge_clip.write_videofile(challenge_output, audio=False)
 
 
-        print(img.shape)
-        
-        o_img = draw_boxes(img, search_boxes)
-        # img_with_boxes, out_boxes = find_cars(img, ystarts, ystops, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins)
-        img_with_boxes, out_boxes = find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins)
-        img_with_boxes = draw_boxes(img_with_boxes, search_boxes)
-        # print(out_boxes)
-        heatmap = add_heat(heatmap, out_boxes)
-        labels = label(heatmap)
-        img_with_labels = draw_labeled_bboxes(np.copy(img), labels)
-        out_images.append(o_img)
-        out_titles.append('search area')
-        out_images.append(img_with_boxes)
-        out_titles.append('sliding windows example')
-        # out_images.append(heatmap)
-        # out_titles.append('heatmap')
-        # out_images.append(img_with_labels)
-        # out_titles.append('labels')
-
-    fig = plt.figure(figsize=(9,3)) # 6 x 2 -> 12, 32
-    visualize(fig, 1, 2, out_images, out_titles)
-
-
-
-bm = BoxMemory()
-
-def image_pipeline(img):
-	heatmap = np.zeros_like(img[:,:,0])
-	    
-	out_img, out_boxes = find_cars(img, search_boxes, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins)
-	# print(len(out_boxes))
-
-	bm.add_boxes(out_boxes)
-	out_boxes = bm.get_boxes_from_X_frames(frames = 5)
-	# print(len(out_boxes))
-
-	for box in out_boxes:
-		heatmap = add_heat(heatmap, box)
-
-	heatmap = apply_threshold(heatmap, 3)
-
-	labels = label(heatmap)
-
-	draw_img = draw_labeled_bboxes(np.copy(img), labels)
-
-	return draw_img
-
-# challenge_output = 'output_images/vehicle_detection_video.mp4'
-# clip2 = VideoFileClip('project_video.mp4')
-# challenge_clip = clip2.fl_image(image_pipeline)
-# challenge_clip.write_videofile(challenge_output, audio=False)
-
-
-imgArr = glob.glob('test_images/test1.jpg')
-process_image_array(imgArr)
-plt.show(block=True)
-
-
-# ============================ VISUALIZE HOG
-
-# n_samples = 1
-# random_idxs = np.random.randint(0, len(cars), n_samples)
-# test_cars = np.array(cars)[random_idxs]
-# test_notcars = np.array(non_cars)[random_idxs]
-
-# car_image = mpimg.imread(test_cars[0])
-# notcar_image = mpimg.imread(test_notcars[0])
-
-# car_feat, car_hog_image = single_img_features(car_image, color_space=color_space, spatial_size=spatial_size,
-#   hist_bins=hist_bins, orient=orient,
-#   pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=0,
-#   spatial_feat=spatial_feat, hist_feat=hist_feat, hog_feat=hog_feat, vis=True)
-
-# notcar_feat, notcar_hog_image = single_img_features(notcar_image, color_space=color_space, spatial_size=spatial_size,
-#   hist_bins=hist_bins, orient=orient,
-#   pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=0,
-#   spatial_feat=spatial_feat, hist_feat=hist_feat, hog_feat=hog_feat, vis=True)
-
-# images = [car_image, car_hog_image, notcar_image, notcar_hog_image]
-# titles= ['car image', 'car HOG image', 'notcar image', 'notcar HOG image']
-
-# fig = plt.figure(figsize=(12,3))
-# visualize(fig, 1, 4, images, titles)
-
+# imgArr = glob.glob('test_images/test*.jpg')
+# process_image_array(imgArr)
 # plt.show(block=True)
-# ================================= END VISUALIZE HOG
